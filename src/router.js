@@ -1,11 +1,15 @@
 import { createBrowserRouter } from "react-router-dom";
-import Home from "./pages/home";
-import Watch from "./pages/watch";
+
+import Watch from "./pages/Watch";
 import Layout from "./components/Layout";
+import NotFound from "./pages/NotFound";
+import Home from "./pages/Home";
+
 const router = createBrowserRouter([
       {
         path: "/",
         element: <Layout/>,
+        errorElement: <NotFound />,
         children: [ 
             {
                index: true,
