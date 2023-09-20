@@ -4,6 +4,7 @@ import Watch from "./pages/Watch";
 import Layout from "./components/Layout";
 import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
+import Create from "./pages/Create";
 
 const router = createBrowserRouter([ 
       //createBrowserRouter 함수를 사용하여 라우터를 생성하고, 라우팅 구성을 정의
@@ -23,6 +24,10 @@ const router = createBrowserRouter([
           }
         ]
       },
+      {
+        path : "/create",
+        element:<Create />,  // 공통적인부분 사용하지 않을 때 
+      }
 ]);
 export default router;
 
