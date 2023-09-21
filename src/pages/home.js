@@ -4,6 +4,7 @@ import { faBagShopping, faClapperboard, faGamepad, faHouse, faLightbulb, faMedal
 import { faFolder } from "@fortawesome/free-solid-svg-icons";
 import { useState, useEffect } from "react";
 import { getCategories } from "../api/video";
+import { getvideos } from "../api/video";
 
 
 const StyledAside = styled.aside`
@@ -177,23 +178,35 @@ const StyledMain = styled.main`
 `;
 const Home = () => {
      
-
+    // 카테고리들 가져오기 
     const [categories, setCategories] = useState([]);
     // async ~ await + axios
-
 
     const categoryAPI = async () => {
       const result = await getCategories();
       setCategories(result.data);
-    }
+    };
+
+     // 비디오 전체 리스트 가져오기 
+    const [videos, setVideos] = useState([]);
+
+    const videosAPI = async () => {
+        const result = await getvideos(); 
+        setVideos(result.data);
+    };
+
     useEffect(() => {
       categoryAPI();
+      videosAPI();
         /*
         fetch("http://localhost:8080/api/category").then((response) => response.json()).then((json) => {
             setCategories(json);
         })
         */
     }, []);
+
+   
+    
     return (
     <StyledMain>
         <StyledAside>
@@ -232,89 +245,29 @@ const Home = () => {
                     <a key={item.categoryCode} href="#">{item.categoryName}</a>
                 ))}
             </nav>
-            <section>
-                {/*
-                <a href="#" className="video-content">
-                    <video width="100%" poster="./resources/thumbnail.jpg" autoplay loop controls>
-                        <source src="./resources/video (1).mp4" type="video/mp4" />
-                    </video>
-                    <div className="video-summary">
-                        <img src="./resources/thumbnail.jpg" alt="채널이미지" />
-                        <div className="video-desc">
-                            <h3>"한국 사람들은 소풍가서 이렇게 먹어?! 캐나다에서 김밥 팔자는 엄마.." 김밥에 라면 처음 먹어본 캐나다 가족 반응! 라면 국물에 김밥 찍어먹더니.. 외국인 김밥먹방 [국제커플]</h3>
-                            <p>tvN</p>
-                            <p>
-                                조회수 <span>9.1만</span>회ㆍ
-                                <span>1일</span> 전
-                            </p>
-                        </div>
-                    </div>
-                </a>
-                <a href="#" className="video-content">
-                    <video width="100%" poster="./resources/thumbnail.jpg" autoplay loop controls>
-                        <source src="./resources/video (1).mp4" type="video/mp4" />
-                    </video>
-                    <div className="video-summary">
-                        <img src="./resources/thumbnail.jpg" alt="채널이미지" />
-                        <div className="video-desc">
-                            <h3>부산 촌놈 마지막화...!</h3>
-                            <p>tvN</p>
-                            <p>
-                                조회수 <span>9.1만</span>회ㆍ
-                                <span>1일</span> 전
-                            </p>
-                        </div>
-                    </div>
-                </a>
-                <a href="#" className="video-content">
-                    <video width="100%" poster="./resources/thumbnail.jpg" autoplay loop controls>
-                        <source src="./resources/video (1).mp4" type="video/mp4" />
-                    </video>
-                    <div className="video-summary">
-                        <img src="./resources/thumbnail.jpg" alt="채널이미지" />
-                        <div className="video-desc">
-                            <h3>부산 촌놈 마지막화...!</h3>
-                            <p>tvN</p>
-                            <p>
-                                조회수 <span>9.1만</span>회ㆍ
-                                <span>1일</span> 전
-                            </p>
-                        </div>
-                    </div>
-                </a>
-                <a href="#" className="video-content">
-                    <video width="100%" poster="./resources/thumbnail.jpg" autoplay loop controls>
-                        <source src="./resources/video (1).mp4" type="video/mp4" />
-                    </video>
-                    <div className="video-summary">
-                        <img src="./resources/thumbnail.jpg" alt="채널이미지" />
-                        <div className="video-desc">
-                            <h3>부산 촌놈 마지막화...!</h3>
-                            <p>tvN</p>
-                            <p>
-                                조회수 <span>9.1만</span>회ㆍ
-                                <span>1일</span> 전
-                            </p>
-                        </div>
-                    </div>
-                </a>
-                <a href="#" className="video-content">
-                    <video width="100%" poster="./resources/thumbnail.jpg" autoplay loop controls>
-                        <source src="./resources/video (1).mp4" type="video/mp4" />
-                    </video>
-                    <div className="video-summary">
-                        <img src="./resources/thumbnail.jpg" alt="채널이미지" />
-                        <div className="video-desc">
-                            <h3>부산 촌놈 마지막화...!</h3>
-                            <p>tvN</p>
-                            <p>
-                                조회수 <span>9.1만</span>회ㆍ
-                                <span>1일</span> 전
-                            </p>
-                        </div>
-                    </div>
-                </a>
-                */}
+
+
+            {/* local에서는 이미지파일에 대해 직접접근 불가 상대경로로 접근, public에서 upload 파일 만들어서 접근하도록 */}
+            <section> 
+                      {videos.map((item)=> (
+                        < a href="#" className="video-content" key={item.videoCode}>
+                            <video width="100%" poster={"/upload/"+item.videoPhoto} autoplay loop controls>
+                                <source src={"/upload/" + item.videoUrl} type="video/mp4" />
+                            </video>
+                            <div className="video-summary">
+                                <img src={"/upload/" + item.channel.channelPhoto} alt="채널이미지" />
+                                <div className="video-desc">
+                                    <h3>{item.videoTitle}</h3>
+                                    <p>{item.channel.channelName}</p>
+                                    <p>
+                                        조회수 <span>{item.videoViews}</span>회ㆍ
+                                        <span>1일</span> 전
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
+                      ))};
+
             </section>
         </MainContent>
     </StyledMain>
