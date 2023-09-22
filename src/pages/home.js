@@ -5,6 +5,7 @@ import { faFolder } from "@fortawesome/free-solid-svg-icons";
 import { useState, useEffect } from "react";
 import { getCategories } from "../api/video";
 import { getvideos } from "../api/video";
+import { useInView } from "react-intersection-observer";
 
 
 const StyledAside = styled.aside`
@@ -190,23 +191,68 @@ const Home = () => {
      // 비디오 전체 리스트 가져오기 
     const [videos, setVideos] = useState([]);
 
+    const [category, setCategory] = useState(null);
+
     const videosAPI = async () => {
-        const result = await getvideos(); 
-        setVideos(result.data);
+
+        // DATABASE 연결해야 하는 부분
+        // spring + mubatis(동적 쿼리 ) / Spring boot + JPA(JPQL, @QUERY)
+        // --> QueryDSL (동적쿼리부분을 JPA 와 함께 같이 사용할 수 있도록)
+        const result = await getvideos(page, category); 
+        console.log(result.data);
+        setVideos([...videos, ...result.data]);
     };
+
+   
 
     useEffect(() => {
       categoryAPI();
-      videosAPI();
+     // videosAPI();
         /*
         fetch("http://localhost:8080/api/category").then((response) => response.json()).then((json) => {
             setCategories(json);
         })
         */
     }, []);
-
+     
+    // 무한 페이징 설정 
+    const [ref, inView] = useInView();
+    const [page, setPage] = useState(1);
    
+    useEffect(() => {
+       if(inView){ // 관찰 대상 : inView
+                 console.log(`${inView} : 무한 스크롤 요청이 들어가야 하는 부분`);
+                 videosAPI();
+                 setPage(page+1);
+                 
+                 
+       }
+    }, [inView]);
     
+   const categoryFilterAPI = async () => {
+    const result = await getvideos(page, category);
+    setVideos(result.data);
+   }
+
+
+   useEffect(()=>{
+   if(category != null){
+    console.log(category);
+    categoryFilterAPI();
+   }
+   },[category])
+
+    const filterCategory = (e) => {
+        e.preventDefault();
+        const href = e.target.href.split("/");
+        console.log(href[href.length-1]);
+        setCategory(parseInt(href[href.length-1]));
+        
+        setPage(1);
+    }
+
+
+
     return (
     <StyledMain>
         <StyledAside>
@@ -223,7 +269,7 @@ const Home = () => {
             <div className="aside-category">
                 <h2>탐색</h2>
                 {categories.map((category) => (
-                    <a href="#" key={category.categoryCode}>
+                    <a href="#"   key={category.categoryCode}>
                     {category.categoryCode === 1 ? (<FontAwesomeIcon icon={faBagShopping} />) :
                      category.categoryCode === 2 ? (<FontAwesomeIcon icon={faMusic} />) : 
                      category.categoryCode === 3 ? (<FontAwesomeIcon icon={faClapperboard} />) : 
@@ -240,9 +286,9 @@ const Home = () => {
         </StyledAside>
         <MainContent className="main-content">
             <nav>
-                <a href="#" className="active">전체</a>
+                <a href="#"  className="active">전체</a>
                 {categories.map((item) => (
-                    <a key={item.categoryCode} href="#">{item.categoryName}</a>
+                    <a key={item.categoryCode} onClick={filterCategory} href={item.categoryCode}>{item.categoryName}</a>
                 ))}
             </nav>
 
@@ -251,7 +297,7 @@ const Home = () => {
             <section> 
                       {videos.map((item)=> (
                         < a href="#" className="video-content" key={item.videoCode}>
-                            <video width="100%" poster={"/upload/"+item.videoPhoto} autoplay loop controls>
+                            <video width="100%" poster={"/upload/"+item.videoPhoto} autoPlay loop controls>
                                 <source src={"/upload/" + item.videoUrl} type="video/mp4" />
                             </video>
                             <div className="video-summary">
@@ -267,7 +313,8 @@ const Home = () => {
                             </div>
                         </a>
                       ))};
-
+                       {/* 페이지 끝나는 시점 ref로 설정 */}
+                   <div ref={ref}></div> 
             </section>
         </MainContent>
     </StyledMain>
